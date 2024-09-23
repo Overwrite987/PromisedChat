@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import ru.overwrite.chat.utils.Config;
@@ -14,15 +15,13 @@ import ru.overwrite.chat.utils.Metrics;
 import net.milkbowl.vault.permission.Permission;
 import net.milkbowl.vault.chat.Chat;
 
+@Getter
 public final class PromisedChat extends JavaPlugin {
 
-    @Getter
     private Chat chat;
 
-    @Getter
     private Permission perms;
 
-    @Getter
     private final Config pluginConfig = new Config();
 
     @Override
@@ -33,8 +32,9 @@ public final class PromisedChat extends JavaPlugin {
         }
         saveDefaultConfig();
         setupConfig();
-        setupChat();
-        setupPerms();
+        ServicesManager servicesManager = getServer().getServicesManager();
+        setupChat(servicesManager);
+        setupPerms(servicesManager);
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new ChatListener(this), this);
         pm.registerEvents(new CommandListener(this), this);
@@ -61,17 +61,15 @@ public final class PromisedChat extends JavaPlugin {
         return true;
     }
 
-    private void setupChat() {
-        RegisteredServiceProvider<Chat> chatProvider = getServer().getServicesManager()
-                .getRegistration(Chat.class);
+    private void setupChat(ServicesManager servicesManager) {
+        RegisteredServiceProvider<Chat> chatProvider = servicesManager.getRegistration(Chat.class);
         if (chatProvider != null) {
             chat = chatProvider.getProvider();
         }
     }
 
-    private void setupPerms() {
-        RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager()
-                .getRegistration(Permission.class);
+    private void setupPerms(ServicesManager servicesManager) {
+        RegisteredServiceProvider<Permission> permissionProvider = servicesManager.getRegistration(Permission.class);
         if (permissionProvider != null) {
             perms = permissionProvider.getProvider();
         }
