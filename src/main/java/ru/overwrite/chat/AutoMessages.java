@@ -31,7 +31,7 @@ public class AutoMessages {
                 if (!pluginConfig.autoMessage) {
                     return;
                 }
-                List<String> amsg = getRandomMessage();
+                List<String> amsg = getAutoMessage();
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     if (!p.hasPermission("pchat.automessage")) {
                         continue;
@@ -46,7 +46,7 @@ public class AutoMessages {
 
     private int i = 0;
 
-    private List<String> getRandomMessage() {
+    private List<String> getAutoMessage() {
         if (pluginConfig.isRandom) {
             return pluginConfig.autoMessages.get(getRandomKey(pluginConfig.autoMessages.keySet()));
         }
