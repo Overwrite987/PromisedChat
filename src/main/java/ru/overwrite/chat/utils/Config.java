@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import ru.overwrite.api.commons.StringUtils;
@@ -32,7 +33,7 @@ public class Config {
 
     public Map<String, String> perGroupColor;
 
-    public Map<String, List<String>> autoMessages;
+    public Int2ObjectOpenHashMap<List<String>> autoMessages;
 
     public void setupFormats(FileConfiguration config) {
         ConfigurationSection format = config.getConfigurationSection("format");
@@ -75,10 +76,14 @@ public class Config {
         if (!this.autoMessage) {
             return;
         }
-        autoMessages = new HashMap<>();
+        autoMessages = new Int2ObjectOpenHashMap<>();
         ConfigurationSection messages = autoMessage.getConfigurationSection("messages");
         for (String messageName : messages.getKeys(false)) {
-            autoMessages.put(messageName, messages.getStringList(messageName));
+            if (!StringUtils.isNumeric(messageName)) {
+                break;
+            }
+            int messageID = Integer.parseInt(messageName);
+            autoMessages.put(messageID, messages.getStringList(messageName));
         }
         isRandom = autoMessage.getBoolean("random");
     }

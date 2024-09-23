@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.concurrent.ThreadLocalRandom;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -16,15 +17,12 @@ import ru.overwrite.chat.utils.Config;
 
 public class AutoMessages {
 
-    private final PromisedChat instance;
+    private final PromisedChat plugin;
     private final Config pluginConfig;
 
-    private Iterator<Map.Entry<String, List<String>>> autoMessageIterator;
-
     public AutoMessages(PromisedChat plugin) {
-        instance = plugin;
+        this.plugin = plugin;
         pluginConfig = plugin.getPluginConfig();
-        autoMessageIterator = pluginConfig.autoMessages != null ? pluginConfig.autoMessages.entrySet().iterator() : null;
     }
 
     public void startMSG(FileConfiguration config) {
@@ -33,16 +31,7 @@ public class AutoMessages {
                 if (!pluginConfig.autoMessage) {
                     return;
                 }
-                List<String> amsg;
-                if (pluginConfig.isRandom) {
-                    amsg = pluginConfig.autoMessages.get(getRandomKey(pluginConfig.autoMessages.keySet()));
-                } else {
-                    if (!autoMessageIterator.hasNext()) {
-                        autoMessageIterator = pluginConfig.autoMessages.entrySet().iterator();
-                    }
-                    Map.Entry<String, List<String>> entry = autoMessageIterator.next();
-                    amsg = entry.getValue();
-                }
+                List<String> amsg = getRandomMessage();
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     if (!p.hasPermission("pchat.automessage")) {
                         continue;
@@ -52,21 +41,22 @@ public class AutoMessages {
                     }
                 }
             }
-        }).runTaskTimerAsynchronously(instance, 20L, config.getInt("autoMessage.messageInterval") * 20L);
+        }).runTaskTimerAsynchronously(plugin, 20L, config.getInt("autoMessage.messageInterval") * 20L);
     }
 
-    private <K, V> K getRandomKey(Set<K> keySet) {
-        if (keySet.isEmpty()) {
-            return null;
+    private int i = 0;
+
+    private List<String> getRandomMessage() {
+        if (pluginConfig.isRandom) {
+            return pluginConfig.autoMessages.get(getRandomKey(pluginConfig.autoMessages.keySet()));
         }
-
-        int randomIndex = ThreadLocalRandom.current().nextInt(keySet.size());
-        Iterator<K> iterator = keySet.iterator();
-
-        for (int i = 0; i < randomIndex; i++) {
-            iterator.next();
+        if (i++ >= pluginConfig.autoMessages.keySet().size()) {
+            i = 0;
         }
+        return pluginConfig.autoMessages.get(i);
+    }
 
-        return iterator.next();
+    private int getRandomKey(IntSet intSet) {
+        return ThreadLocalRandom.current().nextInt(intSet.size());
     }
 }

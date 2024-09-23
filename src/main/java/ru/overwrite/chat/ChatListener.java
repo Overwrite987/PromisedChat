@@ -28,13 +28,13 @@ import ru.overwrite.chat.utils.Utils;
 
 public class ChatListener implements Listener {
 
-    private final PromisedChat instance;
+    private final PromisedChat plugin;
     private final Config pluginConfig;
     private final ExpiringMap<String, Long> localCooldowns;
     private final ExpiringMap<String, Long> globalCooldowns;
 
     public ChatListener(PromisedChat plugin) {
-        instance = plugin;
+        this.plugin = plugin;
         pluginConfig = plugin.getPluginConfig();
         localCooldowns = new ExpiringMap<>(pluginConfig.localRateLimit, TimeUnit.MILLISECONDS);
         globalCooldowns = new ExpiringMap<>(pluginConfig.globalRateLimit, TimeUnit.MILLISECONDS);
@@ -45,39 +45,33 @@ public class ChatListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlayerChatSent(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
-        if (pluginConfig.newbieChat) {
-            long time = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
-            if (!p.hasPermission("pchat.bypass.newbie") && time <= pluginConfig.newbieCooldown) {
-                String cd = TimeUtils.getTime((int) (pluginConfig.newbieCooldown - time), " ч. ", " мин. ", " сек. ");
-                p.sendMessage(pluginConfig.newbieMessage.replace("%time%", cd));
-                e.setCancelled(true);
-                return;
-            }
+        if (checkNewbie(p, e)) {
+            return;
         }
         String name = p.getName();
         String message = e.getMessage();
-        String prefix = instance.getChat().getPlayerPrefix(p);
-        String suffix = instance.getChat().getPlayerSuffix(p);
+        String prefix = plugin.getChat().getPlayerPrefix(p);
+        String suffix = plugin.getChat().getPlayerSuffix(p);
         String globalMessage = removeGlobalPrefix(message);
         String[] replacementList = {name, prefix, suffix, getDonatePlaceholder(p)};
         if (pluginConfig.forceGlobal || (message.split("")[0].equals("!") && !globalMessage.isBlank())) {
             if (processCooldown(e, p, name, globalCooldowns, pluginConfig.globalRateLimit)) {
                 return;
             }
-            String gf = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.globalFormat, searchList, replacementList)));
+            String globalFormat = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.globalFormat, searchList, replacementList)));
             String chatMessage = Utils.formatByPerm(p, globalMessage);
             if (pluginConfig.hoverText) {
                 e.setCancelled(true);
-                sendHover(p, replacementList, gf, new ArrayList<>(Bukkit.getOnlinePlayers()), chatMessage);
-            } else {
-                e.setFormat(gf.replace("<message>", chatMessage).replace("%", "%%"));
+                sendHover(p, replacementList, globalFormat, new ArrayList<>(Bukkit.getOnlinePlayers()), chatMessage);
+                return;
             }
+            e.setFormat(getFormatWithMessage(globalFormat, chatMessage));
             return;
         }
         if (processCooldown(e, p, name, localCooldowns, pluginConfig.localRateLimit)) {
             return;
         }
-        String lf = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.localFormat, searchList, replacementList)));
+        String localFormat = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.localFormat, searchList, replacementList)));
         e.getRecipients().clear();
         e.getRecipients().add(p);
         List<Player> radiusInfo = getRadius(p);
@@ -88,16 +82,33 @@ public class ChatListener implements Listener {
         if (pluginConfig.hoverText) {
             radiusInfo.add(p);
             e.setCancelled(true);
-            sendHover(p, replacementList, lf, radiusInfo, chatMessage);
-        } else {
-            e.setFormat(lf.replace("<message>", chatMessage).replace("%", "%%"));
+            sendHover(p, replacementList, localFormat, radiusInfo, chatMessage);
+            return;
         }
+        e.setFormat(getFormatWithMessage(localFormat, chatMessage));
+    }
+
+    private boolean checkNewbie(Player p, Cancellable e) {
+        if (pluginConfig.newbieChat) {
+            if (p.hasPermission("pchat.bypass.newbie")) {
+                return false;
+            }
+            long time = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
+            if (time <= pluginConfig.newbieCooldown) {
+                String cd = TimeUtils.getTime((int) (pluginConfig.newbieCooldown - time), " ч. ", " мин. ", " сек. ");
+                p.sendMessage(pluginConfig.newbieMessage.replace("%time%", cd));
+                e.setCancelled(true);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void sendHover(Player p, String[] replacementList, String format, List<Player> recipients, String chatMessage) {
-        String hovertext = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.hoverMessage, searchList, replacementList)));
-        HoverEvent hover = new HoverEvent(Action.SHOW_TEXT, new Text(TextComponent.fromLegacyText(hovertext)));
-        BaseComponent[] comp = TextComponent.fromLegacyText(format.replace("<message>", chatMessage).replace("%", "%%"));
+        String hoverText = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.hoverMessage, searchList, replacementList)));
+        HoverEvent hover = new HoverEvent(Action.SHOW_TEXT, new Text(TextComponent.fromLegacyText(hoverText)));
+        String finalChatMessage = getFormatWithMessage(format, chatMessage);
+        BaseComponent[] comp = TextComponent.fromLegacyText(finalChatMessage);
         for (BaseComponent component : comp) {
             component.setHoverEvent(hover);
         }
@@ -105,7 +116,7 @@ public class ChatListener implements Listener {
             ps.spigot().sendMessage(comp);
         }
         // Костыли... костыли вечны.
-        Bukkit.getConsoleSender().sendMessage(format.replace("<message>", chatMessage).replace("%", "%%"));
+        Bukkit.getConsoleSender().sendMessage(finalChatMessage);
     }
 
     private boolean processCooldown(Cancellable e, Player p, String name, ExpiringMap<String, Long> playerCooldown, long rateLimit) {
@@ -135,17 +146,19 @@ public class ChatListener implements Listener {
         return playerlist;
     }
 
-    public String removeGlobalPrefix(String message) {
+    private String removeGlobalPrefix(String message) {
         return pluginConfig.forceGlobal ? message : message.substring(1).trim();
     }
 
+    private String getFormatWithMessage(String format, String chatMessage) {
+        return format
+                .replace("<message>", chatMessage)
+                .replace("%", "%%"); // Это надо чтобы PAPI не выёбывался
+    }
+
     private String getDonatePlaceholder(Player p) {
-        String placeholder = "";
-        String playerGroup = instance.getPerms().getPrimaryGroup(p);
-        if (pluginConfig.perGroupColor.containsKey(playerGroup)) {
-            placeholder = pluginConfig.perGroupColor.get(playerGroup);
-        }
-        return placeholder;
+        String playerGroup = plugin.getPerms().getPrimaryGroup(p);
+        return pluginConfig.perGroupColor.getOrDefault(playerGroup, "");
     }
 
     @EventHandler
