@@ -80,8 +80,8 @@ public class Utils {
         if (player.hasPermission("pchat.style.hex")) {
             return StringUtils.colorize(message);
         }
-        Matcher matcher = colorPattern.matcher(message);
-        char colorChar = '&';
+        final Matcher matcher = colorPattern.matcher(message);
+        final char colorChar = '&';
         while (matcher.find()) {
             String code = matcher.group(1);
             String colorPerm = "pchat.color." + colorCodesMap.get(code);
