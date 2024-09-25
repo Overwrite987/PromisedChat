@@ -32,6 +32,9 @@ public class AutoMessages {
                     return;
                 }
                 List<String> amsg = getAutoMessage();
+                if (amsg == null || amsg.isEmpty()) {
+                    return;
+                }
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     if (!p.hasPermission("pchat.automessage")) {
                         continue;
