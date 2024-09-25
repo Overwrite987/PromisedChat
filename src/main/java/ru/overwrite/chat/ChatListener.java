@@ -54,7 +54,7 @@ public class ChatListener implements Listener {
         String suffix = plugin.getChat().getPlayerSuffix(p);
         String globalMessage = removeGlobalPrefix(message);
         String[] replacementList = {name, prefix, suffix, getDonatePlaceholder(p)};
-        if (pluginConfig.forceGlobal || (message.split("")[0].equals("!") && !globalMessage.isBlank())) {
+        if (pluginConfig.forceGlobal || (message.charAt(0) == '!' && !globalMessage.isBlank())) {
             if (processCooldown(e, p, name, globalCooldowns, pluginConfig.globalRateLimit)) {
                 return;
             }
