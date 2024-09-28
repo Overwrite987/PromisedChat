@@ -23,8 +23,8 @@ public class CommandListener implements Listener {
             return;
         }
         Player player = e.getPlayer();
-        String[] message = e.getMessage().split(" ");
-        String command = message[0];
+        String[] message = e.getMessage().split(" ", 1);
+        final String command = message[0];
         long time = (System.currentTimeMillis() - player.getFirstPlayed()) / 1000;
         if (!player.hasPermission("pchat.bypass.newbie") && time <= pluginConfig.newbieCooldown) {
             for (String cmd : pluginConfig.newbieCommands) {

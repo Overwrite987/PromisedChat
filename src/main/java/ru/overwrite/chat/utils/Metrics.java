@@ -39,9 +39,9 @@ public class Metrics {
   private final MetricsBase metricsBase;
 
   /**
-   * Creates a new Metrics plugin.
+   * Creates a new Metrics instance.
    *
-   * @param plugin Your plugin plugin.
+   * @param plugin Your plugin instance.
    * @param serviceId The id of the service. It can be found at <a
    *     href="https://bstats.org/what-is-my-plugin-id">What is my plugin id?</a>
    */
@@ -193,7 +193,7 @@ public class Metrics {
     private final boolean enabled;
 
     /**
-     * Creates a new MetricsBase class plugin.
+     * Creates a new MetricsBase class instance.
      *
      * @param platform The platform of the service.
      * @param serviceId The id of the service.

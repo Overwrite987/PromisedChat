@@ -83,11 +83,11 @@ public class Utils {
         final Matcher matcher = colorPattern.matcher(message);
         final char colorChar = '&';
         while (matcher.find()) {
-            String code = matcher.group(1);
-            String colorPerm = "pchat.color." + colorCodesMap.get(code);
-            String stylePerm = "pchat.style." + colorStylesMap.get(code);
-            ChatColor color = colorCodesPermissions.get(colorPerm);
-            ChatColor style = colorStylesPermissions.get(stylePerm);
+            final String code = matcher.group(1);
+            final String colorPerm = "pchat.color." + colorCodesMap.get(code);
+            final String stylePerm = "pchat.style." + colorStylesMap.get(code);
+            final ChatColor color = colorCodesPermissions.get(colorPerm);
+            final ChatColor style = colorStylesPermissions.get(stylePerm);
 
             if (color != null && player.hasPermission(colorPerm)) {
                 message = message.replace(colorChar + code, color.toString());
