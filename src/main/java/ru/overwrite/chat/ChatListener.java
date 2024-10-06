@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -135,12 +136,15 @@ public class ChatListener implements Listener {
 
     private List<Player> getRadius(Player p) {
         List<Player> playerlist = new ArrayList<>();
+        double maxDist = Math.pow(pluginConfig.chatRadius, 2.0D);
+        final Location loc = p.getLocation();
         for (Player ps : Bukkit.getOnlinePlayers()) {
-            if (ps.getWorld() == p.getWorld()) {
-                boolean dist = p.getLocation().distanceSquared(ps.getLocation()) <= Math.pow(pluginConfig.chatRadius, 2.0D);
-                if (ps != p && dist) {
-                    playerlist.add(ps);
-                }
+            if (ps.getWorld() != p.getWorld()) {
+                continue;
+            }
+            boolean dist = loc.distanceSquared(ps.getLocation()) <= maxDist;
+            if (ps != p && dist) {
+                playerlist.add(ps);
             }
         }
         return playerlist;
