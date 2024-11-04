@@ -1,11 +1,7 @@
 package ru.overwrite.chat;
 
-import java.util.logging.Logger;
-
 import lombok.Getter;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -32,22 +28,22 @@ public final class PromisedChat extends JavaPlugin {
         }
         saveDefaultConfig();
         setupConfig();
-        ServicesManager servicesManager = getServer().getServicesManager();
+        var servicesManager = getServer().getServicesManager();
         setupChat(servicesManager);
         setupPerms(servicesManager);
-        PluginManager pm = getServer().getPluginManager();
+        var pm = getServer().getPluginManager();
         pm.registerEvents(new ChatListener(this), this);
         pm.registerEvents(new CommandListener(this), this);
         new AutoMessages(this).startMSG(getConfig());
         getCommand("promisedchat").setExecutor(new CommandClass(this));
         new Metrics(this, 20699);
-        long endTime = System.currentTimeMillis();
+        var endTime = System.currentTimeMillis();
         getLogger().info("Plugin started in " + (endTime - startTime) + " ms");
     }
 
     public boolean isPaper() {
         if (getServer().getName().equals("CraftBukkit")) {
-            Logger logger = getLogger();
+            var logger = getLogger();
             logger.info(" ");
             logger.info("============= ! WARNING ! =============");
             logger.info("Этот плагин работает только на Paper и его форках!");
@@ -76,7 +72,7 @@ public final class PromisedChat extends JavaPlugin {
     }
 
     public void setupConfig() {
-        FileConfiguration config = getConfig();
+        var config = getConfig();
         pluginConfig.setupFormats(config);
         pluginConfig.setupHover(config);
         pluginConfig.setupCooldown(config);

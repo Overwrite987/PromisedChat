@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -45,22 +44,22 @@ public class ChatListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlayerChatSent(AsyncPlayerChatEvent e) {
-        Player p = e.getPlayer();
+        var p = e.getPlayer();
         if (checkNewbie(p, e)) {
             return;
         }
-        String name = p.getName();
-        String message = e.getMessage();
-        String prefix = plugin.getChat().getPlayerPrefix(p);
-        String suffix = plugin.getChat().getPlayerSuffix(p);
-        String globalMessage = removeGlobalPrefix(message);
+        var name = p.getName();
+        var message = e.getMessage();
+        var prefix = plugin.getChat().getPlayerPrefix(p);
+        var suffix = plugin.getChat().getPlayerSuffix(p);
+        var globalMessage = removeGlobalPrefix(message);
         String[] replacementList = {name, prefix, suffix, getDonatePlaceholder(p)};
         if (pluginConfig.forceGlobal || (message.charAt(0) == '!' && !globalMessage.isBlank())) {
             if (processCooldown(e, p, name, globalCooldowns, pluginConfig.globalRateLimit)) {
                 return;
             }
-            String globalFormat = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.globalFormat, searchList, replacementList)));
-            String chatMessage = Utils.formatByPerm(p, globalMessage);
+            var globalFormat = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.globalFormat, searchList, replacementList)));
+            var chatMessage = Utils.formatByPerm(p, globalMessage);
             if (pluginConfig.hoverText) {
                 e.setCancelled(true);
                 sendHover(p, replacementList, globalFormat, new ArrayList<>(Bukkit.getOnlinePlayers()), chatMessage);
@@ -72,14 +71,14 @@ public class ChatListener implements Listener {
         if (processCooldown(e, p, name, localCooldowns, pluginConfig.localRateLimit)) {
             return;
         }
-        String localFormat = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.localFormat, searchList, replacementList)));
+        var localFormat = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.localFormat, searchList, replacementList)));
         e.getRecipients().clear();
         e.getRecipients().add(p);
         List<Player> radiusInfo = getRadius(p);
         if (!radiusInfo.isEmpty()) {
             e.getRecipients().addAll(radiusInfo);
         }
-        String chatMessage = Utils.formatByPerm(p, message);
+        var chatMessage = Utils.formatByPerm(p, message);
         if (pluginConfig.hoverText) {
             radiusInfo.add(p);
             e.setCancelled(true);
@@ -94,9 +93,9 @@ public class ChatListener implements Listener {
             if (p.hasPermission("pchat.bypass.newbie")) {
                 return false;
             }
-            long time = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
+            var time = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
             if (time <= pluginConfig.newbieCooldown) {
-                String cd = TimeUtils.getTime((int) (pluginConfig.newbieCooldown - time), " ч. ", " мин. ", " сек. ");
+                var cd = TimeUtils.getTime((int) (pluginConfig.newbieCooldown - time), " ч. ", " мин. ", " сек. ");
                 p.sendMessage(pluginConfig.newbieMessage.replace("%time%", cd));
                 e.setCancelled(true);
                 return true;
@@ -106,14 +105,14 @@ public class ChatListener implements Listener {
     }
 
     private void sendHover(Player p, String[] replacementList, String format, List<Player> recipients, String chatMessage) {
-        String hoverText = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.hoverMessage, searchList, replacementList)));
-        HoverEvent hover = new HoverEvent(Action.SHOW_TEXT, new Text(TextComponent.fromLegacyText(hoverText)));
-        String finalChatMessage = getFormatWithMessage(format, chatMessage);
+        var hoverText = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.hoverMessage, searchList, replacementList)));
+        var hover = new HoverEvent(Action.SHOW_TEXT, new Text(TextComponent.fromLegacyText(hoverText)));
+        var finalChatMessage = getFormatWithMessage(format, chatMessage);
         BaseComponent[] comp = TextComponent.fromLegacyText(finalChatMessage);
-        for (BaseComponent component : comp) {
+        for (var component : comp) {
             component.setHoverEvent(hover);
         }
-        for (Player ps : recipients) {
+        for (var ps : recipients) {
             ps.spigot().sendMessage(comp);
         }
         // Костыли... костыли вечны.
@@ -125,7 +124,7 @@ public class ChatListener implements Listener {
             return false;
         }
         if (playerCooldown.containsKey(name)) {
-            String cd = TimeUtils.getTime((int) (rateLimit / 1000 + (playerCooldown.get(name) - System.currentTimeMillis()) / 1000), " ч. ", " мин. ", " сек. ");
+            var cd = TimeUtils.getTime((int) (rateLimit / 1000 + (playerCooldown.get(name) - System.currentTimeMillis()) / 1000), " ч. ", " мин. ", " сек. ");
             p.sendMessage(pluginConfig.tooFast.replace("%time%", cd));
             e.setCancelled(true);
             return true;
@@ -136,13 +135,13 @@ public class ChatListener implements Listener {
 
     private List<Player> getRadius(Player p) {
         List<Player> playerlist = new ArrayList<>();
-        double maxDist = Math.pow(pluginConfig.chatRadius, 2.0D);
-        final Location loc = p.getLocation();
-        for (Player ps : Bukkit.getOnlinePlayers()) {
+        var maxDist = Math.pow(pluginConfig.chatRadius, 2.0D);
+        final var loc = p.getLocation();
+        for (var ps : Bukkit.getOnlinePlayers()) {
             if (ps.getWorld() != p.getWorld()) {
                 continue;
             }
-            boolean dist = loc.distanceSquared(ps.getLocation()) <= maxDist;
+            var dist = loc.distanceSquared(ps.getLocation()) <= maxDist;
             if (ps != p && dist) {
                 playerlist.add(ps);
             }
@@ -161,20 +160,20 @@ public class ChatListener implements Listener {
     }
 
     private String getDonatePlaceholder(Player p) {
-        String playerGroup = plugin.getPerms().getPrimaryGroup(p);
+        var playerGroup = plugin.getPerms().getPrimaryGroup(p);
         return pluginConfig.perGroupColor.getOrDefault(playerGroup, "");
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
-        String name = e.getPlayer().getName();
+        var name = e.getPlayer().getName();
         localCooldowns.remove(name);
         globalCooldowns.remove(name);
     }
 
     @EventHandler
     public void onKick(PlayerKickEvent e) {
-        String name = e.getPlayer().getName();
+        var name = e.getPlayer().getName();
         localCooldowns.remove(name);
         globalCooldowns.remove(name);
     }

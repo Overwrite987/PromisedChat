@@ -1,15 +1,11 @@
 package ru.overwrite.chat;
 
-import java.util.Map;
 import java.util.List;
-import java.util.Set;
-import java.util.Iterator;
 import java.util.concurrent.ThreadLocalRandom;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import ru.overwrite.api.commons.StringUtils;
@@ -35,11 +31,11 @@ public class AutoMessages {
                 if (amsg == null || amsg.isEmpty()) {
                     return;
                 }
-                for (Player p : Bukkit.getOnlinePlayers()) {
+                for (var p : Bukkit.getOnlinePlayers()) {
                     if (!p.hasPermission("pchat.automessage")) {
                         continue;
                     }
-                    for (String message : amsg) {
+                    for (var message : amsg) {
                         p.sendMessage(StringUtils.colorize(message));
                     }
                 }

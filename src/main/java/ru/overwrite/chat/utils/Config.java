@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import ru.overwrite.api.commons.StringUtils;
 
@@ -36,12 +35,12 @@ public class Config {
     public Int2ObjectOpenHashMap<List<String>> autoMessages;
 
     public void setupFormats(FileConfiguration config) {
-        ConfigurationSection format = config.getConfigurationSection("format");
+        var format = config.getConfigurationSection("format");
         localFormat = format.getString("local");
         chatRadius = format.getInt("localRadius");
         globalFormat = format.getString("global");
         forceGlobal = format.getBoolean("forceGlobal");
-        ConfigurationSection donatePlaceholders = config.getConfigurationSection("donatePlaceholders");
+        var donatePlaceholders = config.getConfigurationSection("donatePlaceholders");
         perGroupColor = new HashMap<>();
         for (String groupName : donatePlaceholders.getKeys(false)) {
             String color = donatePlaceholders.getString(groupName);
@@ -50,20 +49,20 @@ public class Config {
     }
 
     public void setupHover(FileConfiguration config) {
-        ConfigurationSection hoverText = config.getConfigurationSection("hoverText");
+        var hoverText = config.getConfigurationSection("hoverText");
         this.hoverText = hoverText.getBoolean("enable");
         hoverMessage = hoverText.getString("format");
     }
 
     public void setupCooldown(FileConfiguration config) {
-        ConfigurationSection cooldown = config.getConfigurationSection("cooldown");
+        var cooldown = config.getConfigurationSection("cooldown");
         localRateLimit = cooldown.getLong("localCooldown");
         globalRateLimit = cooldown.getLong("globalCooldown");
         tooFast = StringUtils.colorize(cooldown.getString("cooldownMessage"));
     }
 
     public void setupNewbie(FileConfiguration config) {
-        ConfigurationSection newbieChat = config.getConfigurationSection("newbieChat");
+        var newbieChat = config.getConfigurationSection("newbieChat");
         this.newbieChat = newbieChat.getBoolean("enable");
         newbieCooldown = newbieChat.getInt("newbieCooldown");
         newbieMessage = StringUtils.colorize(newbieChat.getString("newbieChatMessage"));
@@ -71,18 +70,18 @@ public class Config {
     }
 
     public void setupAutoMessage(FileConfiguration config) {
-        ConfigurationSection autoMessage = config.getConfigurationSection("autoMessage");
+        var autoMessage = config.getConfigurationSection("autoMessage");
         this.autoMessage = autoMessage.getBoolean("enable");
         if (!this.autoMessage) {
             return;
         }
         autoMessages = new Int2ObjectOpenHashMap<>();
-        ConfigurationSection messages = autoMessage.getConfigurationSection("messages");
-        for (String messageName : messages.getKeys(false)) {
+        var messages = autoMessage.getConfigurationSection("messages");
+        for (var messageName : messages.getKeys(false)) {
             if (!StringUtils.isNumeric(messageName)) {
                 break;
             }
-            int messageID = Integer.parseInt(messageName);
+            var messageID = Integer.parseInt(messageName);
             autoMessages.put(messageID, messages.getStringList(messageName));
         }
         isRandom = autoMessage.getBoolean("random");

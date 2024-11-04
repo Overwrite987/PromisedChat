@@ -1,6 +1,5 @@
 package ru.overwrite.chat.utils;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Map;
 import java.util.HashMap;
@@ -80,14 +79,14 @@ public class Utils {
         if (player.hasPermission("pchat.style.hex")) {
             return StringUtils.colorize(message);
         }
-        final Matcher matcher = colorPattern.matcher(message);
-        final char colorChar = '&';
+        final var matcher = colorPattern.matcher(message);
+        final var colorChar = '&';
         while (matcher.find()) {
-            final String code = matcher.group(1);
-            final String colorPerm = "pchat.color." + colorCodesMap.get(code);
-            final String stylePerm = "pchat.style." + colorStylesMap.get(code);
-            final ChatColor color = colorCodesPermissions.get(colorPerm);
-            final ChatColor style = colorStylesPermissions.get(stylePerm);
+            final var code = matcher.group(1);
+            final var colorPerm = "pchat.color." + colorCodesMap.get(code);
+            final var stylePerm = "pchat.style." + colorStylesMap.get(code);
+            final var color = colorCodesPermissions.get(colorPerm);
+            final var style = colorStylesPermissions.get(stylePerm);
 
             if (color != null && player.hasPermission(colorPerm)) {
                 message = message.replace(colorChar + code, color.toString());
