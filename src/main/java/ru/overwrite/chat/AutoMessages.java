@@ -18,7 +18,7 @@ public class AutoMessages {
 
     public AutoMessages(PromisedChat plugin) {
         this.plugin = plugin;
-        pluginConfig = plugin.getPluginConfig();
+        this.pluginConfig = plugin.getPluginConfig();
     }
 
     public void startMSG(FileConfiguration config) {

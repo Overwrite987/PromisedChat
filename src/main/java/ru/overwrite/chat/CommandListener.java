@@ -12,7 +12,7 @@ public class CommandListener implements Listener {
     private final Config pluginConfig;
 
     public CommandListener(PromisedChat plugin) {
-        pluginConfig = plugin.getPluginConfig();
+        this.pluginConfig = plugin.getPluginConfig();
     }
 
     @EventHandler(ignoreCancelled = true)

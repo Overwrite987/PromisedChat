@@ -35,9 +35,9 @@ public class ChatListener implements Listener {
 
     public ChatListener(PromisedChat plugin) {
         this.plugin = plugin;
-        pluginConfig = plugin.getPluginConfig();
-        localCooldowns = new ExpiringMap<>(pluginConfig.localRateLimit, TimeUnit.MILLISECONDS);
-        globalCooldowns = new ExpiringMap<>(pluginConfig.globalRateLimit, TimeUnit.MILLISECONDS);
+        this.pluginConfig = plugin.getPluginConfig();
+        this.localCooldowns = new ExpiringMap<>(pluginConfig.localRateLimit, TimeUnit.MILLISECONDS);
+        this.globalCooldowns = new ExpiringMap<>(pluginConfig.globalRateLimit, TimeUnit.MILLISECONDS);
     }
 
     private final String[] searchList = {"<player>", "<prefix>", "<suffix>", "<dph>"};
