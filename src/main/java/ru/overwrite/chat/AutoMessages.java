@@ -35,8 +35,8 @@ public class AutoMessages {
                     if (!p.hasPermission("pchat.automessage")) {
                         continue;
                     }
-                    for (var message : amsg) {
-                        p.sendMessage(StringUtils.colorize(message));
+                    for (var msg : amsg) {
+                        p.sendMessage(StringUtils.colorize(msg));
                     }
                 }
             }

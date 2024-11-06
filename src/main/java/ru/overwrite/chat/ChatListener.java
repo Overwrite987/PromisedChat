@@ -22,7 +22,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 
 import ru.overwrite.api.cache.ExpiringMap;
 import ru.overwrite.api.commons.StringUtils;
-import ru.overwrite.api.commons.TimeUtils;
 import ru.overwrite.chat.utils.Config;
 import ru.overwrite.chat.utils.Utils;
 
@@ -40,52 +39,52 @@ public class ChatListener implements Listener {
         this.globalCooldowns = new ExpiringMap<>(pluginConfig.globalRateLimit, TimeUnit.MILLISECONDS);
     }
 
-    private final String[] searchList = {"<player>", "<prefix>", "<suffix>", "<dph>"};
+    private final String[] sl = {"<player>", "<prefix>", "<suffix>", "<dph>"};
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onPlayerChatSent(AsyncPlayerChatEvent e) {
+    public void onChat(AsyncPlayerChatEvent e) {
         var p = e.getPlayer();
         if (checkNewbie(p, e)) {
             return;
         }
         var name = p.getName();
-        var message = e.getMessage();
-        var prefix = plugin.getChat().getPlayerPrefix(p);
-        var suffix = plugin.getChat().getPlayerSuffix(p);
-        var globalMessage = removeGlobalPrefix(message);
-        String[] replacementList = {name, prefix, suffix, getDonatePlaceholder(p)};
-        if (pluginConfig.forceGlobal || (message.charAt(0) == '!' && !globalMessage.isBlank())) {
+        var msg = e.getMessage();
+        var pfx = plugin.getChat().getPlayerPrefix(p);
+        var sfx = plugin.getChat().getPlayerSuffix(p);
+        var gm = removeGlobalPrefix(msg);
+        String[] rl = {name, pfx, sfx, getDonatePlaceholder(p)};
+        if (pluginConfig.forceGlobal || (msg.charAt(0) == '!' && !gm.isBlank())) {
             if (processCooldown(e, p, name, globalCooldowns, pluginConfig.globalRateLimit)) {
                 return;
             }
-            var globalFormat = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.globalFormat, searchList, replacementList)));
-            var chatMessage = Utils.formatByPerm(p, globalMessage);
+            var gf = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.globalFormat, sl, rl)));
+            var cm = Utils.formatByPerm(p, gm);
             if (pluginConfig.hoverText) {
                 e.setCancelled(true);
-                sendHover(p, replacementList, globalFormat, new ArrayList<>(Bukkit.getOnlinePlayers()), chatMessage);
+                sendHover(p, rl, gf, new ArrayList<>(Bukkit.getOnlinePlayers()), cm);
                 return;
             }
-            e.setFormat(getFormatWithMessage(globalFormat, chatMessage));
+            e.setFormat(getFormatWithMessage(gf, cm));
             return;
         }
         if (processCooldown(e, p, name, localCooldowns, pluginConfig.localRateLimit)) {
             return;
         }
-        var localFormat = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.localFormat, searchList, replacementList)));
+        var lf = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.localFormat, sl, rl)));
         e.getRecipients().clear();
         e.getRecipients().add(p);
-        List<Player> radiusInfo = getRadius(p);
-        if (!radiusInfo.isEmpty()) {
-            e.getRecipients().addAll(radiusInfo);
+        List<Player> rinf = getRadius(p);
+        if (!rinf.isEmpty()) {
+            e.getRecipients().addAll(rinf);
         }
-        var chatMessage = Utils.formatByPerm(p, message);
+        var cm = Utils.formatByPerm(p, msg);
         if (pluginConfig.hoverText) {
-            radiusInfo.add(p);
+            rinf.add(p);
             e.setCancelled(true);
-            sendHover(p, replacementList, localFormat, radiusInfo, chatMessage);
+            sendHover(p, rl, lf, rinf, cm);
             return;
         }
-        e.setFormat(getFormatWithMessage(localFormat, chatMessage));
+        e.setFormat(getFormatWithMessage(lf, cm));
     }
 
     private boolean checkNewbie(Player p, Cancellable e) {
@@ -93,9 +92,9 @@ public class ChatListener implements Listener {
             if (p.hasPermission("pchat.bypass.newbie")) {
                 return false;
             }
-            var time = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
-            if (time <= pluginConfig.newbieCooldown) {
-                var cd = TimeUtils.getTime((int) (pluginConfig.newbieCooldown - time), " ч. ", " мин. ", " сек. ");
+            var t = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
+            if (t <= pluginConfig.newbieCooldown) {
+                var cd = StringUtils.getTime((int) (pluginConfig.newbieCooldown - t), " ч. ", " мин. ", " сек. ");
                 p.sendMessage(pluginConfig.newbieMessage.replace("%time%", cd));
                 e.setCancelled(true);
                 return true;
@@ -105,10 +104,10 @@ public class ChatListener implements Listener {
     }
 
     private void sendHover(Player p, String[] replacementList, String format, List<Player> recipients, String chatMessage) {
-        var hoverText = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.hoverMessage, searchList, replacementList)));
-        var hover = new HoverEvent(Action.SHOW_TEXT, new Text(TextComponent.fromLegacyText(hoverText)));
-        var finalChatMessage = getFormatWithMessage(format, chatMessage);
-        BaseComponent[] comp = TextComponent.fromLegacyText(finalChatMessage);
+        var ht = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.hoverMessage, sl, replacementList)));
+        var hover = new HoverEvent(Action.SHOW_TEXT, new Text(TextComponent.fromLegacyText(ht)));
+        var fcm = getFormatWithMessage(format, chatMessage);
+        BaseComponent[] comp = TextComponent.fromLegacyText(fcm);
         for (var component : comp) {
             component.setHoverEvent(hover);
         }
@@ -116,7 +115,7 @@ public class ChatListener implements Listener {
             ps.spigot().sendMessage(comp);
         }
         // Костыли... костыли вечны.
-        Bukkit.getConsoleSender().sendMessage(finalChatMessage);
+        Bukkit.getConsoleSender().sendMessage(fcm);
     }
 
     private boolean processCooldown(Cancellable e, Player p, String name, ExpiringMap<String, Long> playerCooldown, long rateLimit) {
@@ -124,7 +123,7 @@ public class ChatListener implements Listener {
             return false;
         }
         if (playerCooldown.containsKey(name)) {
-            var cd = TimeUtils.getTime((int) (rateLimit / 1000 + (playerCooldown.get(name) - System.currentTimeMillis()) / 1000), " ч. ", " мин. ", " сек. ");
+            var cd = StringUtils.getTime((int) (rateLimit / 1000 + (playerCooldown.get(name) - System.currentTimeMillis()) / 1000), " ч. ", " мин. ", " сек. ");
             p.sendMessage(pluginConfig.tooFast.replace("%time%", cd));
             e.setCancelled(true);
             return true;
@@ -134,7 +133,7 @@ public class ChatListener implements Listener {
     }
 
     private List<Player> getRadius(Player p) {
-        List<Player> playerlist = new ArrayList<>();
+        List<Player> plist = new ArrayList<>();
         var maxDist = Math.pow(pluginConfig.chatRadius, 2.0D);
         final var loc = p.getLocation();
         for (var ps : Bukkit.getOnlinePlayers()) {
@@ -143,10 +142,10 @@ public class ChatListener implements Listener {
             }
             var dist = loc.distanceSquared(ps.getLocation()) <= maxDist;
             if (ps != p && dist) {
-                playerlist.add(ps);
+                plist.add(ps);
             }
         }
-        return playerlist;
+        return plist;
     }
 
     private String removeGlobalPrefix(String message) {
@@ -160,8 +159,8 @@ public class ChatListener implements Listener {
     }
 
     private String getDonatePlaceholder(Player p) {
-        var playerGroup = plugin.getPerms().getPrimaryGroup(p);
-        return pluginConfig.perGroupColor.getOrDefault(playerGroup, "");
+        var pgroup = plugin.getPerms().getPrimaryGroup(p);
+        return pluginConfig.perGroupColor.getOrDefault(pgroup, "");
     }
 
     @EventHandler

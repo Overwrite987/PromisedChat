@@ -22,35 +22,35 @@ public final class PromisedChat extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        long startTime = System.currentTimeMillis();
+        long st = System.currentTimeMillis();
         if (!isPaper()) {
             return;
         }
         saveDefaultConfig();
         setupConfig();
-        var servicesManager = getServer().getServicesManager();
-        setupChat(servicesManager);
-        setupPerms(servicesManager);
+        var sm = getServer().getServicesManager();
+        setupChat(sm);
+        setupPerms(sm);
         var pm = getServer().getPluginManager();
         pm.registerEvents(new ChatListener(this), this);
         pm.registerEvents(new CommandListener(this), this);
         new AutoMessages(this).startMSG(getConfig());
         getCommand("promisedchat").setExecutor(new CommandClass(this));
         new Metrics(this, 20699);
-        var endTime = System.currentTimeMillis();
-        getLogger().info("Plugin started in " + (endTime - startTime) + " ms");
+        var et = System.currentTimeMillis();
+        getLogger().info("Plugin started in " + (et - st) + " ms");
     }
 
     public boolean isPaper() {
         if (getServer().getName().equals("CraftBukkit")) {
-            var logger = getLogger();
-            logger.info(" ");
-            logger.info("============= ! WARNING ! =============");
-            logger.info("Этот плагин работает только на Paper и его форках!");
-            logger.info("Автор категорически выступает за отказ от использования устаревшего и уязвимого софта!");
-            logger.info("Скачать Paper: https://papermc.io/downloads/all");
-            logger.info("============= ! WARNING ! =============");
-            logger.info(" ");
+            var l = getLogger();
+            l.info(" ");
+            l.info("============= ! WARNING ! =============");
+            l.info("Этот плагин работает только на Paper и его форках!");
+            l.info("Автор категорически выступает за отказ от использования устаревшего и уязвимого софта!");
+            l.info("Скачать Paper: https://papermc.io/downloads/all");
+            l.info("============= ! WARNING ! =============");
+            l.info(" ");
             this.setEnabled(false);
             return false;
         }
@@ -58,16 +58,16 @@ public final class PromisedChat extends JavaPlugin {
     }
 
     private void setupChat(ServicesManager servicesManager) {
-        RegisteredServiceProvider<Chat> chatProvider = servicesManager.getRegistration(Chat.class);
-        if (chatProvider != null) {
-            chat = chatProvider.getProvider();
+        RegisteredServiceProvider<Chat> cp = servicesManager.getRegistration(Chat.class);
+        if (cp != null) {
+            chat = cp.getProvider();
         }
     }
 
     private void setupPerms(ServicesManager servicesManager) {
-        RegisteredServiceProvider<Permission> permissionProvider = servicesManager.getRegistration(Permission.class);
-        if (permissionProvider != null) {
-            perms = permissionProvider.getProvider();
+        RegisteredServiceProvider<Permission> pp = servicesManager.getRegistration(Permission.class);
+        if (pp != null) {
+            perms = pp.getProvider();
         }
     }
 

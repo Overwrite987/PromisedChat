@@ -4,7 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import ru.overwrite.api.commons.TimeUtils;
+import ru.overwrite.api.commons.StringUtils;
 import ru.overwrite.chat.utils.Config;
 
 public class CommandListener implements Listener {
@@ -20,15 +20,15 @@ public class CommandListener implements Listener {
         if (!pluginConfig.newbieChat) {
             return;
         }
-        var player = e.getPlayer();
-        var message = e.getMessage().split(" ", 1);
-        final var command = message[0];
-        var time = (System.currentTimeMillis() - player.getFirstPlayed()) / 1000;
-        if (!player.hasPermission("pchat.bypass.newbie") && time <= pluginConfig.newbieCooldown) {
+        var p = e.getPlayer();
+        var m = e.getMessage().split(" ", 1);
+        final var command = m[0];
+        var t = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
+        if (!p.hasPermission("pchat.bypass.newbie") && t <= pluginConfig.newbieCooldown) {
             for (var cmd : pluginConfig.newbieCommands) {
                 if (command.startsWith(cmd + " ") || command.equalsIgnoreCase(cmd)) {
-                    var cd = TimeUtils.getTime((int) (pluginConfig.newbieCooldown - time), " ч. ", " мин. ", " сек. ");
-                    player.sendMessage(pluginConfig.newbieMessage.replace("%time%", cd));
+                    var cd = StringUtils.getTime((int) (pluginConfig.newbieCooldown - t), " ч. ", " мин. ", " сек. ");
+                    p.sendMessage(pluginConfig.newbieMessage.replace("%time%", cd));
                     e.setCancelled(true);
                     return;
                 }
