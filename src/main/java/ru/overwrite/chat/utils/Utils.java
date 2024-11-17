@@ -1,23 +1,23 @@
 package ru.overwrite.chat.utils;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Map;
-import java.util.HashMap;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.md_5.bungee.api.ChatColor;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
-import ru.overwrite.api.commons.StringUtils;
 
 public class Utils {
 
     private static final Pattern colorPattern = Pattern.compile("&([0-9a-fA-Fklmnor])");
 
-    private static final Map<String, ChatColor> colorCodesPermissions = new HashMap<>();
-    private static final Map<String, String> colorCodesMap = new HashMap<>();
+    private static final Object2ObjectMap<String, ChatColor> colorCodesPermissions = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectMap<String, String> colorCodesMap = new Object2ObjectOpenHashMap<>();
 
-    private static final Map<String, ChatColor> colorStylesPermissions = new HashMap<>();
-    private static final Map<String, String> colorStylesMap = new HashMap<>();
+    private static final Object2ObjectMap<String, ChatColor> colorStylesPermissions = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectMap<String, String> colorStylesMap = new Object2ObjectOpenHashMap<>();
 
     static {
         colorCodesPermissions.put("pchat.color.black", ChatColor.BLACK);
@@ -68,6 +68,55 @@ public class Utils {
         colorStylesMap.put("r", "reset");
     }
 
+    private static final Pattern HEX_PATTERN = Pattern.compile("&#([a-fA-F\\d]{6})");
+    private static final char COLOR_CHAR = '§';
+
+    public static String colorize(String message) {
+        if (message == null || message.isEmpty()) {
+            return message;
+        }
+        Matcher matcher = HEX_PATTERN.matcher(message);
+        StringBuilder builder = new StringBuilder(message.length() + 32);
+        while (matcher.find()) {
+            String group = matcher.group(1);
+            matcher.appendReplacement(builder,
+                    COLOR_CHAR + "x" +
+                            COLOR_CHAR + group.charAt(0) +
+                            COLOR_CHAR + group.charAt(1) +
+                            COLOR_CHAR + group.charAt(2) +
+                            COLOR_CHAR + group.charAt(3) +
+                            COLOR_CHAR + group.charAt(4) +
+                            COLOR_CHAR + group.charAt(5));
+        }
+        message = matcher.appendTail(builder).toString();
+        return translateAlternateColorCodes('&', message);
+    }
+
+    public static String translateAlternateColorCodes(char altColorChar, String textToTranslate) {
+        char[] b = textToTranslate.toCharArray();
+
+        for (int i = 0, length = b.length - 1; i < length; ++i) {
+            if (b[i] == altColorChar && isValidColorCharacter(b[i + 1])) {
+                b[i++] = '§';
+                b[i] = Character.toLowerCase(b[i]);
+            }
+        }
+
+        return new String(b);
+    }
+
+    private static boolean isValidColorCharacter(char c) {
+        return (c >= '0' && c <= '9') ||
+                (c >= 'a' && c <= 'f') ||
+                c == 'r' ||
+                (c >= 'k' && c <= 'o') ||
+                c == 'x' ||
+                (c >= 'A' && c <= 'F') ||
+                c == 'R' ||
+                (c >= 'K' && c <= 'O') ||
+                c == 'X';
+    }
+
     public static String replacePlaceholders(Player player, String message) {
         if (PlaceholderAPI.containsPlaceholders(message)) {
             message = PlaceholderAPI.setPlaceholders(player, message);
@@ -75,9 +124,81 @@ public class Utils {
         return message;
     }
 
+    public static String getTime(int time, String hoursMark, String minutesMark, String secondsMark) {
+        final int hours = getHours(time);
+        final int minutes = getMinutes(time);
+        final int seconds = getSeconds(time);
+
+        final StringBuilder result = new StringBuilder();
+
+        if (hours > 0) {
+            result.append(hours).append(hoursMark);
+        }
+
+        if (minutes > 0 || hours > 0) {
+            result.append(minutes).append(minutesMark);
+        }
+
+        result.append(seconds).append(secondsMark);
+
+        return result.toString();
+    }
+
+    public static int getHours(int time) {
+        return time / 3600;
+    }
+
+    public static int getMinutes(int time) {
+        return (time % 3600) / 60;
+    }
+
+    public static int getSeconds(int time) {
+        return time % 60;
+    }
+
+    public static boolean isNumeric(CharSequence cs) {
+        if (cs == null || cs.isEmpty()) {
+            return false;
+        }
+        final int sz = cs.length();
+
+        for (int i = 0; i < sz; ++i) {
+            if (!Character.isDigit(cs.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static String replaceEach(String text, String[] searchList, String[] replacementList) {
+        if (text == null || text.isEmpty() || searchList.length == 0 || replacementList.length == 0) {
+            return text;
+        }
+
+        if (searchList.length != replacementList.length) {
+            throw new IllegalArgumentException("Search and replacement arrays must have the same length.");
+        }
+
+        final StringBuilder result = new StringBuilder(text);
+
+        for (int i = 0; i < searchList.length; i++) {
+            String search = searchList[i];
+            String replacement = replacementList[i];
+
+            int start = 0;
+
+            while ((start = result.indexOf(search, start)) != -1) {
+                result.replace(start, start + search.length(), replacement);
+                start += replacement.length();
+            }
+        }
+
+        return result.toString();
+    }
+
     public static String formatByPerm(Player player, String message) {
         if (player.hasPermission("pchat.style.hex")) {
-            return StringUtils.colorize(message);
+            return colorize(message);
         }
         final var matcher = colorPattern.matcher(message);
         final var colorChar = '&';

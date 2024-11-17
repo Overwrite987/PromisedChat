@@ -1,21 +1,21 @@
 package ru.overwrite.chat.utils;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.bukkit.configuration.file.FileConfiguration;
-import ru.overwrite.api.commons.StringUtils;
 
 public class Config {
 
     public boolean newbieChat, autoMessage, hoverText;
     public int newbieCooldown;
     public String newbieMessage;
-    public Set<String> newbieCommands;
+    public ObjectSet<String> newbieCommands;
 
     public int chatRadius;
 
@@ -30,9 +30,9 @@ public class Config {
 
     public long localRateLimit, globalRateLimit;
 
-    public Map<String, String> perGroupColor;
+    public Object2ObjectMap<String, String> perGroupColor;
 
-    public Int2ObjectOpenHashMap<List<String>> autoMessages;
+    public Int2ObjectMap<List<String>> autoMessages;
 
     public void setupFormats(FileConfiguration config) {
         var format = config.getConfigurationSection("format");
@@ -41,7 +41,7 @@ public class Config {
         globalFormat = format.getString("global");
         forceGlobal = format.getBoolean("forceGlobal");
         var donatePlaceholders = config.getConfigurationSection("donatePlaceholders");
-        perGroupColor = new HashMap<>();
+        perGroupColor = new Object2ObjectOpenHashMap<>();
         for (String groupName : donatePlaceholders.getKeys(false)) {
             String color = donatePlaceholders.getString(groupName);
             perGroupColor.put(groupName, color);
@@ -58,15 +58,15 @@ public class Config {
         var cooldown = config.getConfigurationSection("cooldown");
         localRateLimit = cooldown.getLong("localCooldown");
         globalRateLimit = cooldown.getLong("globalCooldown");
-        tooFast = StringUtils.colorize(cooldown.getString("cooldownMessage"));
+        tooFast = Utils.colorize(cooldown.getString("cooldownMessage"));
     }
 
     public void setupNewbie(FileConfiguration config) {
         var newbieChat = config.getConfigurationSection("newbieChat");
         this.newbieChat = newbieChat.getBoolean("enable");
         newbieCooldown = newbieChat.getInt("newbieCooldown");
-        newbieMessage = StringUtils.colorize(newbieChat.getString("newbieChatMessage"));
-        newbieCommands = new HashSet<>(newbieChat.getStringList("newbieCommands"));
+        newbieMessage = Utils.colorize(newbieChat.getString("newbieChatMessage"));
+        newbieCommands = new ObjectOpenHashSet<>(newbieChat.getStringList("newbieCommands"));
     }
 
     public void setupAutoMessage(FileConfiguration config) {
@@ -78,7 +78,7 @@ public class Config {
         autoMessages = new Int2ObjectOpenHashMap<>();
         var messages = autoMessage.getConfigurationSection("messages");
         for (var messageName : messages.getKeys(false)) {
-            if (!StringUtils.isNumeric(messageName)) {
+            if (!Utils.isNumeric(messageName)) {
                 break;
             }
             var messageID = Integer.parseInt(messageName);

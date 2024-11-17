@@ -24,13 +24,13 @@ public class CommandClass implements CommandExecutor {
             return true;
         }
         if (args[0].equalsIgnoreCase("reload")) {
-            var st = System.currentTimeMillis();
+            var startTime = System.currentTimeMillis();
             plugin.reloadConfig();
             plugin.setupConfig();
             Bukkit.getScheduler().cancelTasks(plugin);
             new AutoMessages(plugin).startMSG(plugin.getConfig());
-            var et = System.currentTimeMillis();
-            sender.sendMessage("§5§lPromisedChat §7> §aКонфигурация перезагружена за §e" + (et - st) + " ms");
+            var endTime = System.currentTimeMillis();
+            sender.sendMessage("§5§lPromisedChat §7> §aКонфигурация перезагружена за §e" + (endTime - startTime) + " ms");
             return true;
         } else {
             sender.sendMessage("§6❖ §7Running §5§lPromisedChat §c§l" + plugin.getDescription().getVersion() + "§7 by §5OverwriteMC");

@@ -20,9 +20,8 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 
-import ru.overwrite.api.cache.ExpiringMap;
-import ru.overwrite.api.commons.StringUtils;
 import ru.overwrite.chat.utils.Config;
+import ru.overwrite.chat.utils.ExpiringMap;
 import ru.overwrite.chat.utils.Utils;
 
 public class ChatListener implements Listener {
@@ -39,7 +38,7 @@ public class ChatListener implements Listener {
         this.globalCooldowns = new ExpiringMap<>(pluginConfig.globalRateLimit, TimeUnit.MILLISECONDS);
     }
 
-    private final String[] sl = {"<player>", "<prefix>", "<suffix>", "<dph>"};
+    private final String[] searchList = {"<player>", "<prefix>", "<suffix>", "<dph>"};
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent e) {
@@ -52,39 +51,39 @@ public class ChatListener implements Listener {
         var pfx = plugin.getChat().getPlayerPrefix(p);
         var sfx = plugin.getChat().getPlayerSuffix(p);
         var gm = removeGlobalPrefix(msg);
-        String[] rl = {name, pfx, sfx, getDonatePlaceholder(p)};
+        String[] replacementList = {name, pfx, sfx, getDonatePlaceholder(p)};
         if (pluginConfig.forceGlobal || (msg.charAt(0) == '!' && !gm.isBlank())) {
             if (processCooldown(e, p, name, globalCooldowns, pluginConfig.globalRateLimit)) {
                 return;
             }
-            var gf = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.globalFormat, sl, rl)));
-            var cm = Utils.formatByPerm(p, gm);
+            var gf = Utils.colorize(Utils.replacePlaceholders(p, Utils.replaceEach(pluginConfig.globalFormat, searchList, replacementList)));
+            var cmsg = Utils.formatByPerm(p, gm);
             if (pluginConfig.hoverText) {
                 e.setCancelled(true);
-                sendHover(p, rl, gf, new ArrayList<>(Bukkit.getOnlinePlayers()), cm);
+                sendHover(p, replacementList, gf, new ArrayList<>(Bukkit.getOnlinePlayers()), cmsg);
                 return;
             }
-            e.setFormat(getFormatWithMessage(gf, cm));
+            e.setFormat(getFormatWithMessage(gf, cmsg));
             return;
         }
         if (processCooldown(e, p, name, localCooldowns, pluginConfig.localRateLimit)) {
             return;
         }
-        var lf = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.localFormat, sl, rl)));
+        var lf = Utils.colorize(Utils.replacePlaceholders(p, Utils.replaceEach(pluginConfig.localFormat, searchList, replacementList)));
         e.getRecipients().clear();
         e.getRecipients().add(p);
-        List<Player> rinf = getRadius(p);
-        if (!rinf.isEmpty()) {
-            e.getRecipients().addAll(rinf);
+        List<Player> rInf = getRadius(p);
+        if (!rInf.isEmpty()) {
+            e.getRecipients().addAll(rInf);
         }
-        var cm = Utils.formatByPerm(p, msg);
+        var cmsg = Utils.formatByPerm(p, msg);
         if (pluginConfig.hoverText) {
-            rinf.add(p);
+            rInf.add(p);
             e.setCancelled(true);
-            sendHover(p, rl, lf, rinf, cm);
+            sendHover(p, replacementList, lf, rInf, cmsg);
             return;
         }
-        e.setFormat(getFormatWithMessage(lf, cm));
+        e.setFormat(getFormatWithMessage(lf, cmsg));
     }
 
     private boolean checkNewbie(Player p, Cancellable e) {
@@ -92,10 +91,10 @@ public class ChatListener implements Listener {
             if (p.hasPermission("pchat.bypass.newbie")) {
                 return false;
             }
-            var t = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
-            if (t <= pluginConfig.newbieCooldown) {
-                var cd = StringUtils.getTime((int) (pluginConfig.newbieCooldown - t), " ч. ", " мин. ", " сек. ");
-                p.sendMessage(pluginConfig.newbieMessage.replace("%time%", cd));
+            var time = (System.currentTimeMillis() - p.getFirstPlayed()) / 1000;
+            if (time <= pluginConfig.newbieCooldown) {
+                var cooldown = Utils.getTime((int) (pluginConfig.newbieCooldown - time), " ч. ", " мин. ", " сек. ");
+                p.sendMessage(pluginConfig.newbieMessage.replace("%time%", cooldown));
                 e.setCancelled(true);
                 return true;
             }
@@ -104,7 +103,7 @@ public class ChatListener implements Listener {
     }
 
     private void sendHover(Player p, String[] replacementList, String format, List<Player> recipients, String chatMessage) {
-        var ht = StringUtils.colorize(Utils.replacePlaceholders(p, StringUtils.replaceEach(pluginConfig.hoverMessage, sl, replacementList)));
+        var ht = Utils.colorize(Utils.replacePlaceholders(p, Utils.replaceEach(pluginConfig.hoverMessage, searchList, replacementList)));
         var hover = new HoverEvent(Action.SHOW_TEXT, new Text(TextComponent.fromLegacyText(ht)));
         var fcm = getFormatWithMessage(format, chatMessage);
         BaseComponent[] comp = TextComponent.fromLegacyText(fcm);
@@ -123,8 +122,8 @@ public class ChatListener implements Listener {
             return false;
         }
         if (playerCooldown.containsKey(name)) {
-            var cd = StringUtils.getTime((int) (rateLimit / 1000 + (playerCooldown.get(name) - System.currentTimeMillis()) / 1000), " ч. ", " мин. ", " сек. ");
-            p.sendMessage(pluginConfig.tooFast.replace("%time%", cd));
+            var cooldown = Utils.getTime((int) (rateLimit / 1000 + (playerCooldown.get(name) - System.currentTimeMillis()) / 1000), " ч. ", " мин. ", " сек. ");
+            p.sendMessage(pluginConfig.tooFast.replace("%time%", cooldown));
             e.setCancelled(true);
             return true;
         }
@@ -170,7 +169,7 @@ public class ChatListener implements Listener {
         globalCooldowns.remove(name);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onKick(PlayerKickEvent e) {
         var name = e.getPlayer().getName();
         localCooldowns.remove(name);

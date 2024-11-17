@@ -3,7 +3,9 @@ version: ${project.version}
 main: ru.overwrite.chat.PromisedChat
 api-version: 1.13
 folia-supported: true
-depend: [PlaceholderAPI, Vault, LuckPerms, OverwriteAPI]
+depend: [PlaceholderAPI, Vault, LuckPerms]
+libraries:
+  - com.github.ben-manes.caffeine:caffeine:3.1.8
 commands:
   promisedchat:
     aliases: [pchat]

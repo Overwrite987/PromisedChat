@@ -8,8 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import ru.overwrite.api.commons.StringUtils;
 import ru.overwrite.chat.utils.Config;
+import ru.overwrite.chat.utils.Utils;
 
 public class AutoMessages {
 
@@ -36,7 +36,7 @@ public class AutoMessages {
                         continue;
                     }
                     for (var msg : amsg) {
-                        p.sendMessage(StringUtils.colorize(msg));
+                        p.sendMessage(Utils.colorize(msg));
                     }
                 }
             }
