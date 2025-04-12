@@ -24,12 +24,13 @@ public class CommandClass implements CommandExecutor {
             return true;
         }
         if (args[0].equalsIgnoreCase("reload")) {
-            var startTime = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
             plugin.reloadConfig();
             plugin.setupConfig();
             Bukkit.getScheduler().cancelTasks(plugin);
-            new AutoMessages(plugin).startMSG(plugin.getConfig());
-            var endTime = System.currentTimeMillis();
+            plugin.getAutoMessages().clearData();
+            plugin.getAutoMessages().startMSG();
+            long endTime = System.currentTimeMillis();
             sender.sendMessage("§5§lPromisedChat §7> §aКонфигурация перезагружена за §e" + (endTime - startTime) + " ms");
             return true;
         } else {

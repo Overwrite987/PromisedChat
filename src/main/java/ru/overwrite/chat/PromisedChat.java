@@ -1,17 +1,17 @@
 package ru.overwrite.chat;
 
 import lombok.Getter;
+import net.milkbowl.vault.chat.Chat;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import ru.overwrite.chat.utils.Config;
 import ru.overwrite.chat.utils.Metrics;
 
-import net.milkbowl.vault.permission.Permission;
-import net.milkbowl.vault.chat.Chat;
+import java.util.logging.Logger;
 
 @Getter
 public final class PromisedChat extends JavaPlugin {
@@ -22,6 +22,8 @@ public final class PromisedChat extends JavaPlugin {
 
     private final Config pluginConfig = new Config();
 
+    private AutoMessages autoMessages;
+
     @Override
     public void onEnable() {
         long startTime = System.currentTimeMillis();
@@ -30,13 +32,14 @@ public final class PromisedChat extends JavaPlugin {
         }
         saveDefaultConfig();
         setupConfig();
-        ServicesManager sm = getServer().getServicesManager();
-        setupChat(sm);
-        setupPerms(sm);
-        PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(new ChatListener(this), this);
-        pm.registerEvents(new CommandListener(this), this);
-        new AutoMessages(this).startMSG(getConfig());
+        ServicesManager servicesManager = getServer().getServicesManager();
+        setupChat(servicesManager);
+        setupPerms(servicesManager);
+        PluginManager pluginManager = getServer().getPluginManager();
+        pluginManager.registerEvents(new ChatListener(this), this);
+        pluginManager.registerEvents(new CommandListener(this), this);
+        autoMessages = new AutoMessages(this);
+        autoMessages.startMSG();
         getCommand("promisedchat").setExecutor(new CommandClass(this));
         new Metrics(this, 20699);
         long endTime = System.currentTimeMillis();
@@ -45,7 +48,7 @@ public final class PromisedChat extends JavaPlugin {
 
     public boolean isPaper() {
         if (getServer().getName().equals("CraftBukkit")) {
-            var logger = getLogger();
+            Logger logger = getLogger();
             logger.info(" ");
             logger.info("============= ! WARNING ! =============");
             logger.info("Этот плагин работает только на Paper и его форках!");
@@ -60,17 +63,22 @@ public final class PromisedChat extends JavaPlugin {
     }
 
     private void setupChat(ServicesManager servicesManager) {
-        RegisteredServiceProvider<Chat> chatProvider = servicesManager.getRegistration(Chat.class);
-        if (chatProvider != null) {
-            chat = chatProvider.getProvider();
+        chat = getProvider(servicesManager, Chat.class);
+        if (chat != null) {
+            getLogger().info("Менеджер чата подключён!");
         }
     }
 
     private void setupPerms(ServicesManager servicesManager) {
-        RegisteredServiceProvider<Permission> permissionProvider = servicesManager.getRegistration(Permission.class);
-        if (permissionProvider != null) {
-            perms = permissionProvider.getProvider();
+        perms = getProvider(servicesManager, Permission.class);
+        if (perms != null) {
+            getLogger().info("Менеджер прав подключён!");
         }
+    }
+
+    private <T> T getProvider(ServicesManager servicesManager, Class<T> clazz) {
+        final RegisteredServiceProvider<T> provider = servicesManager.getRegistration(clazz);
+        return provider != null ? provider.getProvider() : null;
     }
 
     public void setupConfig() {

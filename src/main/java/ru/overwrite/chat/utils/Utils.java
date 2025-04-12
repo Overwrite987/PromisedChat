@@ -1,15 +1,15 @@
 package ru.overwrite.chat.utils;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import me.clip.placeholderapi.PlaceholderAPI;
+import net.md_5.bungee.api.ChatColor;
+import org.bukkit.entity.Player;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.md_5.bungee.api.ChatColor;
-import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.entity.Player;
-
-public class Utils {
+public final class Utils {
 
     private static final Pattern colorPattern = Pattern.compile("&([0-9a-fA-Fklmnor])");
 
@@ -93,12 +93,12 @@ public class Utils {
     }
 
     public static String translateAlternateColorCodes(char altColorChar, String textToTranslate) {
-        char[] b = textToTranslate.toCharArray();
+        final char[] b = textToTranslate.toCharArray();
 
         for (int i = 0, length = b.length - 1; i < length; ++i) {
             if (b[i] == altColorChar && isValidColorCharacter(b[i + 1])) {
-                b[i++] = '§';
-                b[i] = Character.toLowerCase(b[i]);
+                b[i++] = COLOR_CHAR;
+                b[i] |= 0x20;
             }
         }
 
@@ -156,20 +156,6 @@ public class Utils {
         return time % 60;
     }
 
-    public static boolean isNumeric(CharSequence cs) {
-        if (cs == null || cs.isEmpty()) {
-            return false;
-        }
-        final int sz = cs.length();
-
-        for (int i = 0; i < sz; ++i) {
-            if (!Character.isDigit(cs.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public static String replaceEach(String text, String[] searchList, String[] replacementList) {
         if (text == null || text.isEmpty() || searchList.length == 0 || replacementList.length == 0) {
             return text;
@@ -200,14 +186,14 @@ public class Utils {
         if (player.hasPermission("pchat.style.hex")) {
             return colorize(message);
         }
-        final var matcher = colorPattern.matcher(message);
-        final var colorChar = '&';
+        final Matcher matcher = colorPattern.matcher(message);
+        final char colorChar = '&';
         while (matcher.find()) {
-            final var code = matcher.group(1);
-            final var colorPerm = "pchat.color." + colorCodesMap.get(code);
-            final var stylePerm = "pchat.style." + colorStylesMap.get(code);
-            final var color = colorCodesPermissions.get(colorPerm);
-            final var style = colorStylesPermissions.get(stylePerm);
+            final String code = matcher.group(1);
+            final String colorPerm = "pchat.color." + colorCodesMap.get(code);
+            final String stylePerm = "pchat.style." + colorStylesMap.get(code);
+            final ChatColor color = colorCodesPermissions.get(colorPerm);
+            final ChatColor style = colorStylesPermissions.get(stylePerm);
 
             if (color != null && player.hasPermission(colorPerm)) {
                 message = message.replace(colorChar + code, color.toString());

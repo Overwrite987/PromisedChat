@@ -1,61 +1,87 @@
 package ru.overwrite.chat;
 
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-
 import ru.overwrite.chat.utils.Config;
 import ru.overwrite.chat.utils.Utils;
+
+import java.util.Collections;
+import java.util.List;
 
 public class AutoMessages {
 
     private final PromisedChat plugin;
     private final Config pluginConfig;
 
+    private int randomIndex = 0;
+    private int sequentialIndex = 0;
+
+    private ObjectList<List<String>> shuffledMessages;
+
     public AutoMessages(PromisedChat plugin) {
         this.plugin = plugin;
         this.pluginConfig = plugin.getPluginConfig();
     }
 
-    public void startMSG(FileConfiguration config) {
-        (new BukkitRunnable() {
+    public void clearData() {
+        randomIndex = 0;
+        sequentialIndex = 0;
+        shuffledMessages = null;
+    }
+
+    public void startMSG() {
+        if (!pluginConfig.autoMessage) {
+            return;
+        }
+        new BukkitRunnable() {
             public void run() {
-                if (!pluginConfig.autoMessage) {
+                List<String> autoMessage = getAutoMessage();
+                if (autoMessage == null || autoMessage.isEmpty()) {
                     return;
                 }
-                List<String> amsg = getAutoMessage();
-                if (amsg == null || amsg.isEmpty()) {
-                    return;
-                }
-                for (var p : Bukkit.getOnlinePlayers()) {
+                for (Player p : Bukkit.getOnlinePlayers()) {
                     if (!p.hasPermission("pchat.automessage")) {
                         continue;
                     }
-                    for (var msg : amsg) {
+                    for (String msg : autoMessage) {
                         p.sendMessage(Utils.colorize(msg));
                     }
                 }
             }
-        }).runTaskTimerAsynchronously(plugin, 20L, config.getInt("autoMessage.messageInterval") * 20L);
+        }.runTaskTimerAsynchronously(plugin, 20L, pluginConfig.autoMessageInterval * 20L);
     }
-
-    private int i = 0;
 
     private List<String> getAutoMessage() {
+        ObjectList<List<String>> messages = pluginConfig.autoMessages;
+        if (messages == null || messages.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         if (pluginConfig.isRandom) {
-            return pluginConfig.autoMessages.get(getRandomKey(pluginConfig.autoMessages.keySet()));
+            handleRandomRotation(messages);
+            return shuffledMessages.get(randomIndex - 1);
+        } else {
+            handleSequentialRotation(messages);
+            return messages.get(sequentialIndex - 1);
         }
-        if (i++ >= pluginConfig.autoMessages.keySet().size()) {
-            i = 0;
-        }
-        return pluginConfig.autoMessages.get(i);
     }
 
-    private int getRandomKey(IntSet intSet) {
-        return ThreadLocalRandom.current().nextInt(intSet.size());
+    private void handleRandomRotation(ObjectList<List<String>> messages) {
+        if (shuffledMessages == null || randomIndex >= shuffledMessages.size()) {
+            shuffledMessages = new ObjectArrayList<>(messages);
+            Collections.shuffle(shuffledMessages);
+            randomIndex = 0;
+        }
+        randomIndex++;
+    }
+
+    private void handleSequentialRotation(List<List<String>> messages) {
+        if (sequentialIndex >= messages.size()) {
+            sequentialIndex = 0;
+        }
+        sequentialIndex++;
     }
 }
