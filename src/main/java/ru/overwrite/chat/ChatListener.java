@@ -71,7 +71,6 @@ public class ChatListener implements Listener {
         }
         String localFormat = Utils.colorize(Utils.replacePlaceholders(p, Utils.replaceEach(pluginConfig.localFormat, searchList, replacementList)));
         e.getRecipients().clear();
-        e.getRecipients().add(p);
         List<Player> playersInRadius = getRadius(p);
         if (!playersInRadius.isEmpty()) {
             e.getRecipients().addAll(playersInRadius);
@@ -143,7 +142,6 @@ public class ChatListener implements Listener {
                 plist.add(player);
             }
         }
-        plist.remove(p);
         return plist;
     }
 
