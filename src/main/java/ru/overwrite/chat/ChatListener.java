@@ -1,5 +1,6 @@
 package ru.overwrite.chat;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.HoverEvent.Action;
@@ -19,7 +20,6 @@ import ru.overwrite.chat.utils.Config;
 import ru.overwrite.chat.utils.ExpiringMap;
 import ru.overwrite.chat.utils.Utils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -131,7 +131,7 @@ public class ChatListener implements Listener {
     }
 
     private List<Player> getRadius(Player p) {
-        List<Player> plist = new ArrayList<>();
+        List<Player> plist = new ObjectArrayList<>();
         double maxDist = Math.pow(pluginConfig.chatRadius, 2.0D);
         Location loc = p.getLocation();
         for (Player player : Bukkit.getOnlinePlayers()) {

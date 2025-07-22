@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.List;
+import java.util.Set;
 
 public class Config {
 
@@ -37,8 +38,9 @@ public class Config {
         globalFormat = format.getString("global");
         forceGlobal = format.getBoolean("forceGlobal");
         ConfigurationSection donatePlaceholders = config.getConfigurationSection("donatePlaceholders");
-        perGroupColor = new Object2ObjectOpenHashMap<>();
-        for (String groupName : donatePlaceholders.getKeys(false)) {
+        Set<String> keys = donatePlaceholders.getKeys(false);
+        perGroupColor = new Object2ObjectOpenHashMap<>(keys.size());
+        for (String groupName : keys) {
             String color = donatePlaceholders.getString(groupName);
             perGroupColor.put(groupName, color);
         }
@@ -71,9 +73,10 @@ public class Config {
         if (!this.autoMessage) {
             return;
         }
-        autoMessages = new ObjectArrayList<>();
         ConfigurationSection messages = autoMessage.getConfigurationSection("messages");
-        for (String messageName : messages.getKeys(false)) {
+        Set<String> keys = messages.getKeys(false);
+        autoMessages = new ObjectArrayList<>(keys.size());
+        for (String messageName : keys) {
             autoMessages.add(messages.getStringList(messageName));
         }
         isRandom = autoMessage.getBoolean("random");

@@ -16,8 +16,8 @@ public class AutoMessages {
     private final PromisedChat plugin;
     private final Config pluginConfig;
 
-    private int randomIndex = 0;
-    private int sequentialIndex = 0;
+    private int randomIndex;
+    private int sequentialIndex;
 
     private ObjectList<List<String>> shuffledMessages;
 
@@ -78,7 +78,7 @@ public class AutoMessages {
         randomIndex++;
     }
 
-    private void handleSequentialRotation(List<List<String>> messages) {
+    private void handleSequentialRotation(ObjectList<List<String>> messages) {
         if (sequentialIndex >= messages.size()) {
             sequentialIndex = 0;
         }
