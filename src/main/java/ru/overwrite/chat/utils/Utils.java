@@ -2,8 +2,8 @@ package ru.overwrite.chat.utils;
 
 import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import lombok.experimental.UtilityClass;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.ChatColor;
@@ -15,10 +15,10 @@ import java.util.regex.Pattern;
 @UtilityClass
 public class Utils {
 
-    private final Object2ObjectMap<String, ChatColor> colorCodesPermissions = new Object2ObjectOpenHashMap<>();
+    private final Reference2ObjectMap<String, ChatColor> colorCodesPermissions = new Reference2ObjectOpenHashMap<>();
     private final Char2ObjectMap<String> colorCodesMap = new Char2ObjectOpenHashMap<>();
 
-    private final Object2ObjectMap<String, ChatColor> colorStylesPermissions = new Object2ObjectOpenHashMap<>();
+    private final Reference2ObjectMap<String, ChatColor> colorStylesPermissions = new Reference2ObjectOpenHashMap<>();
     private final Char2ObjectMap<String> colorStylesMap = new Char2ObjectOpenHashMap<>();
 
     {
@@ -38,6 +38,7 @@ public class Utils {
         colorCodesPermissions.put("pchat.color.light_purple", ChatColor.LIGHT_PURPLE);
         colorCodesPermissions.put("pchat.color.yellow", ChatColor.YELLOW);
         colorCodesPermissions.put("pchat.color.white", ChatColor.WHITE);
+
         colorStylesPermissions.put("pchat.style.obfuscated", ChatColor.MAGIC);
         colorStylesPermissions.put("pchat.style.bold", ChatColor.BOLD);
         colorStylesPermissions.put("pchat.style.strikethrough", ChatColor.STRIKETHROUGH);
@@ -96,7 +97,7 @@ public class Utils {
     public String translateAlternateColorCodes(char altColorChar, String textToTranslate) {
         final char[] b = textToTranslate.toCharArray();
 
-        for (int i = 0, length = b.length -1; i < length; i++) {
+        for (int i = 0, length = b.length - 1; i < length; i++) {
             if (b[i] == altColorChar && isValidColorCharacter(b[i + 1])) {
                 b[i++] = ChatColor.COLOR_CHAR;
                 b[i] |= 0x20;
