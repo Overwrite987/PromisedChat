@@ -80,15 +80,15 @@ public class Utils {
         Matcher matcher = HEX_PATTERN.matcher(message);
         StringBuilder builder = new StringBuilder(message.length() + 32);
         while (matcher.find()) {
-            String group = matcher.group(1);
+            char[] group = matcher.group(1).toCharArray();
             matcher.appendReplacement(builder,
                     ChatColor.COLOR_CHAR + "x" +
-                            ChatColor.COLOR_CHAR + group.charAt(0) +
-                            ChatColor.COLOR_CHAR + group.charAt(1) +
-                            ChatColor.COLOR_CHAR + group.charAt(2) +
-                            ChatColor.COLOR_CHAR + group.charAt(3) +
-                            ChatColor.COLOR_CHAR + group.charAt(4) +
-                            ChatColor.COLOR_CHAR + group.charAt(5));
+                            ChatColor.COLOR_CHAR + group[0] +
+                            ChatColor.COLOR_CHAR + group[1] +
+                            ChatColor.COLOR_CHAR + group[2] +
+                            ChatColor.COLOR_CHAR + group[3] +
+                            ChatColor.COLOR_CHAR + group[4] +
+                            ChatColor.COLOR_CHAR + group[5]);
         }
         message = matcher.appendTail(builder).toString();
         return translateAlternateColorCodes('&', message);
