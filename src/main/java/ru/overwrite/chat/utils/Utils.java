@@ -2,8 +2,8 @@ package ru.overwrite.chat.utils;
 
 import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.experimental.UtilityClass;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.ChatColor;
@@ -15,10 +15,10 @@ import java.util.regex.Pattern;
 @UtilityClass
 public class Utils {
 
-    private final Reference2ObjectMap<String, ChatColor> colorCodesPermissions = new Reference2ObjectOpenHashMap<>();
+    private final Object2ObjectMap<String, ChatColor> colorCodesPermissions = new Object2ObjectOpenHashMap<>();
     private final Char2ObjectMap<String> colorCodesMap = new Char2ObjectOpenHashMap<>();
 
-    private final Reference2ObjectMap<String, ChatColor> colorStylesPermissions = new Reference2ObjectOpenHashMap<>();
+    private final Object2ObjectMap<String, ChatColor> colorStylesPermissions = new Object2ObjectOpenHashMap<>();
     private final Char2ObjectMap<String> colorStylesMap = new Char2ObjectOpenHashMap<>();
 
     {
