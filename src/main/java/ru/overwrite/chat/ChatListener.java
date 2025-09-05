@@ -77,7 +77,6 @@ public class ChatListener implements Listener {
         }
         String colorizedMessage = Utils.formatByPerm(p, message);
         if (pluginConfig.hoverText) {
-            playersInRadius.add(p);
             e.setCancelled(true);
             sendHover(p, replacementList, localFormat, playersInRadius, colorizedMessage);
             return;
