@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import ru.overwrite.chat.utils.Config;
+import ru.overwrite.chat.configuration.Config;
 import ru.overwrite.chat.utils.Utils;
 
 import java.util.Collections;

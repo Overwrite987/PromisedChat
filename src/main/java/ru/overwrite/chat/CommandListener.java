@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import ru.overwrite.chat.utils.Config;
+import ru.overwrite.chat.configuration.Config;
 import ru.overwrite.chat.utils.Utils;
 
 public class CommandListener implements Listener {

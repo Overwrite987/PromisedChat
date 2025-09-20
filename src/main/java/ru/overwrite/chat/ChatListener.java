@@ -2,6 +2,7 @@ package ru.overwrite.chat;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.HoverEvent.Action;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -16,7 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import ru.overwrite.chat.utils.Config;
+import ru.overwrite.chat.configuration.Config;
 import ru.overwrite.chat.utils.ExpiringMap;
 import ru.overwrite.chat.utils.Utils;
 
@@ -107,6 +108,12 @@ public class ChatListener implements Listener {
         BaseComponent[] comp = TextComponent.fromLegacyText(formatWithMessage);
         for (BaseComponent component : comp) {
             component.setHoverEvent(hoverEvent);
+        }
+        if (pluginConfig.clickEvent) {
+            ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.valueOf(pluginConfig.clickAction), Utils.replacePlaceholders(p, Utils.replaceEach(pluginConfig.clickActionValue, searchList, replacementList)));
+            for (BaseComponent component : comp) {
+                component.setClickEvent(clickEvent);
+            }
         }
         for (Player recipient : recipients) {
             recipient.spigot().sendMessage(comp);

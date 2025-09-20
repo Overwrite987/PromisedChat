@@ -1,15 +1,16 @@
-package ru.overwrite.chat.utils;
+package ru.overwrite.chat.configuration;
 
 import it.unimi.dsi.fastutil.objects.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import ru.overwrite.chat.utils.Utils;
 
 import java.util.List;
 import java.util.Set;
 
 public class Config {
 
-    public boolean newbieChat, autoMessage, hoverText;
+    public boolean newbieChat, autoMessage, hoverText, clickEvent;
     public int newbieCooldown;
     public String newbieMessage;
     public ObjectSet<String> newbieCommands;
@@ -22,6 +23,8 @@ public class Config {
     public String globalFormat;
 
     public String hoverMessage;
+    public String clickAction;
+    public String clickActionValue;
 
     public String tooFast;
 
@@ -50,6 +53,12 @@ public class Config {
         ConfigurationSection hoverText = config.getConfigurationSection("hoverText");
         this.hoverText = hoverText.getBoolean("enable");
         hoverMessage = hoverText.getString("format");
+        ConfigurationSection clickEvent = hoverText.getConfigurationSection("clickEvent");
+        if (clickEvent != null) {
+            this.clickEvent = clickEvent.getBoolean("enable");
+            clickAction = clickEvent.getString("actionType");
+            clickActionValue = clickEvent.getString("actionValue");
+        }
     }
 
     public void setupCooldown(FileConfiguration config) {

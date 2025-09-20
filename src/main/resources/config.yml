@@ -26,6 +26,11 @@ hoverText:
     &fРанг: &6%vault_group%
     &fХП: &6%player_health%
     &fОпыт: &6%player_exp%
+  # Настройка клик ивента (действие при клике на сообщение игрока)
+  clickEvent:
+    enable: false
+    actionType: SUGGEST_COMMAND
+    actionValue: "/msg %player%"
 
 # Настройки кулдауна
 cooldown:
