@@ -185,6 +185,9 @@ public class Utils {
             return colorize(message);
         }
         final char[] chars = message.toCharArray();
+        if (chars[chars.length - 1] == '&') {
+            return message;
+        }
         for (int i = 0; i < chars.length; i++) {
             if (chars[i] == '&' && isValidColorCharacter(chars[i + 1])) {
 
@@ -208,5 +211,4 @@ public class Utils {
         }
         return new String(chars);
     }
-
 }
