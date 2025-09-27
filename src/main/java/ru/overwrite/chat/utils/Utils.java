@@ -21,7 +21,7 @@ public class Utils {
     private final Object2ObjectMap<String, ChatColor> colorStylesPermissions = new Object2ObjectOpenHashMap<>();
     private final Char2ObjectMap<String> colorStylesMap = new Char2ObjectOpenHashMap<>();
 
-    {
+    static {
         colorCodesPermissions.put("pchat.color.black", ChatColor.BLACK);
         colorCodesPermissions.put("pchat.color.dark_blue", ChatColor.DARK_BLUE);
         colorCodesPermissions.put("pchat.color.dark_green", ChatColor.DARK_GREEN);
